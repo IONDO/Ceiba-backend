@@ -5,7 +5,7 @@ const Flight = require('../models/flight');
 const Route = require('../models/route');
 const Trip = require('../models/trip');
 
-router.get('/', (req, res, next) => {
+router.get('/routes', (req, res, next) => {
   Route.find({})
     .then(routes => {
       res.status(200).json({ routes })
@@ -13,7 +13,7 @@ router.get('/', (req, res, next) => {
     .catch(next)
 })
 
-router.get('/search', (req, res, next) => {
+router.get('/flights/search', (req, res, next) => {
   const from = req.query.from || { $exists: true }
   const to = req.query.to || { $exists: true }
   const departWeekday = req.query.depart 
@@ -26,10 +26,11 @@ router.get('/search', (req, res, next) => {
     .catch(next)
 })
 
-router.post('/search',async (req, res, next) => {
-    const { outbound, inbound } = req.body;
-        const newTrip = await Trip.create({ outbound, inbound });
-        res.status(200).json(newTrip);
+router.post('/trips', async (req, res, next) => {
+  const { outboundFlightId, inboundFlightId } = req.body.data;
+  const owner = req.session.currentUser._id;
+  const newTrip = await Trip.create({ owner, outboundFlightId, inboundFlightId });
+  res.status(201).json(newTrip);
 })
 
 module.exports = router;
