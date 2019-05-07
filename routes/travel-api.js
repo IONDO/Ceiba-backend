@@ -13,6 +13,14 @@ router.get('/routes', (req, res, next) => {
     .catch(next)
 })
 
+router.get('/flights', (req, res, next) => {
+  Flight.find({})
+    .then(flights => {
+      res.status(200).json({ flights })
+    })
+    .catch(next)
+})
+
 router.get('/flights/search', (req, res, next) => {
   const from = req.query.from || { $exists: true }
   const to = req.query.to || { $exists: true }
@@ -27,10 +35,33 @@ router.get('/flights/search', (req, res, next) => {
 })
 
 router.post('/trips', async (req, res, next) => {
-  const { outboundFlightId, inboundFlightId } = req.body.data;
+  const { outboundFlightId, departureDate, inboundFlightId, returnDate } = req.body.data;
   const owner = req.session.currentUser._id;
-  const newTrip = await Trip.create({ owner, outboundFlightId, inboundFlightId });
+  const newTrip = await Trip.create({ owner, outboundFlightId, departureDate, inboundFlightId, returnDate });
   res.status(201).json(newTrip);
 })
+
+
+router.get('/trips', (req, res, next) => {
+  const owner = req.session.currentUser._id;
+  Trip.find({ owner })
+    .then(trips => {
+      res.status(200).json({ trips })
+    })
+    .catch(next)
+}) 
+
+router.get('/trips/:tripId', async (req, res, next) => {
+  const {tripId} = req.params;
+  try {
+    const trip = await Trip.findById(tripId);
+    const outboundFlight = await Flight.findById(trip.outboundFlightId)
+    const inboundFlight = trip.inboundFlightId ? await Flight.findById(trip.inboundFlightId) : undefined
+    return res.status(200).json({ outboundFlight, inboundFlight});
+  } catch(error) {
+    next(error);
+  }
+})
+
 
 module.exports = router;

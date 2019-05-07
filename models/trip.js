@@ -10,10 +10,17 @@ const tripSchema = new mongoose.Schema({
         type: Schema.Types.ObjectId,
         required: true
     },
-    inboundFlightId: Schema.Types.ObjectId
+    departureDate: Date,
+    inboundFlightId: {
+        type: Schema.Types.ObjectId,
+        date: Date
+    },
+    returnDate: Date
 });
 
-tripSchema.index({owner: 1});
+tripSchema.index({
+    owner: 1
+});
 
 const Trip = mongoose.model('Trip', tripSchema);
 
