@@ -6,14 +6,15 @@ const tripSchema = new mongoose.Schema({
         type: Schema.Types.ObjectId,
         required: true
     },
-    outboundFlightId: {
+    outboundFlight: {
         type: Schema.Types.ObjectId,
+        ref: 'Flight',
         required: true
     },
     departureDate: Date,
-    inboundFlightId: {
+    inboundFlight: {
         type: Schema.Types.ObjectId,
-        date: Date
+        ref: 'Flight'
     },
     returnDate: Date
 });

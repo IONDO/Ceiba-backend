@@ -35,9 +35,9 @@ router.get('/flights/search', (req, res, next) => {
 })
 
 router.post('/trips', async (req, res, next) => {
-  const { outboundFlightId, departureDate, inboundFlightId, returnDate } = req.body.data;
+  const { outboundFlight, departureDate, inboundFlight, returnDate } = req.body.data;
   const owner = req.session.currentUser._id;
-  const newTrip = await Trip.create({ owner, outboundFlightId, departureDate, inboundFlightId, returnDate });
+  const newTrip = await Trip.create({ owner, outboundFlight, departureDate, inboundFlight, returnDate });
   res.status(201).json(newTrip);
 })
 
@@ -45,6 +45,8 @@ router.post('/trips', async (req, res, next) => {
 router.get('/trips', (req, res, next) => {
   const owner = req.session.currentUser._id;
   Trip.find({ owner })
+    .populate("outboundFlight")
+    .populate("inboundFlight")
     .then(trips => {
       res.status(200).json({ trips })
     })
@@ -54,10 +56,10 @@ router.get('/trips', (req, res, next) => {
 router.get('/trips/:tripId', async (req, res, next) => {
   const {tripId} = req.params;
   try {
-    const trip = await Trip.findById(tripId);
-    const outboundFlight = await Flight.findById(trip.outboundFlightId)
-    const inboundFlight = trip.inboundFlightId ? await Flight.findById(trip.inboundFlightId) : undefined
-    return res.status(200).json({ outboundFlight, inboundFlight});
+    const trip = await Trip.findById(tripId)
+      .populate("outboundFlight")
+      .populate("inboundFlight");
+    return res.status(200).json(trip);
   } catch(error) {
     next(error);
   }
