@@ -49,12 +49,9 @@ router.post(
   validationLoggin(),
   async (req, res, next) => {
     const {
-      fullname,
       username,
       password
     } = req.body;
-
-    console.log(fullname)
 
     try {
       const user = await User.findOne({
@@ -66,7 +63,6 @@ router.post(
         const salt = bcrypt.genSaltSync(10);
         const hashPass = bcrypt.hashSync(password, salt);
         const newUser = await User.create({
-          fullname,
           username,
           password: hashPass
         });
@@ -103,14 +99,9 @@ router.post('/profile', async (req, res, next) => {
     _id
   } = req.session.currentUser;
   const {
-    fullname,
     username
   } = req.body;
-  const user = await User.findByIdAndUpdate(_id, {
-      fullname, username
-    }, {
-      new: true
-    })
+  const user = await User.findByIdAndUpdate(_id, { username}, {new: true})
     .select("-password")
   res.status(200).json(user);
 });

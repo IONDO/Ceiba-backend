@@ -4,6 +4,8 @@ const moment = require('moment');
 const Flight = require('../models/flight');
 const Route = require('../models/route');
 const Trip = require('../models/trip');
+const { convertDate } = require('../helpers/dates');
+
 
 router.get('/routes', (req, res, next) => {
   Route.find({})
@@ -37,8 +39,18 @@ router.get('/flights/search', (req, res, next) => {
 router.post('/trips', async (req, res, next) => {
   const { outboundFlight, departureDate, inboundFlight, returnDate } = req.body.data;
   const owner = req.session.currentUser._id;
-  const newTrip = await Trip.create({ owner, outboundFlight, departureDate, inboundFlight, returnDate });
-  res.status(201).json(newTrip);
+  try {
+    const newTrip = await Trip.create({ 
+      owner,
+      outboundFlight,
+      departureDate: convertDate(departureDate), 
+      inboundFlight,
+      returnDate: convertDate(returnDate)
+    });
+    return res.status(201).json(newTrip);
+  } catch(error) {
+    next(error)
+  }
 })
 
 
