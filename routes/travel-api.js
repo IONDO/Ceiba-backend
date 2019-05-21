@@ -1,11 +1,12 @@
 const express = require('express');
+require('dotenv').config();
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const router = express.Router();
 const moment = require('moment');
 const Flight = require('../models/flight');
 const Route = require('../models/route');
 const Trip = require('../models/trip');
 const { convertDate } = require('../helpers/dates');
-
 
 router.get('/routes', (req, res, next) => {
   Route.find({})
@@ -76,6 +77,20 @@ router.get('/trips/:tripId', async (req, res, next) => {
     next(error);
   }
 })
+
+router.post('/checkout', async (req, res) => {
+  const { token, amount, currency } = req.body;
+  try {
+    let {status} = await stripe.charges.create({
+      amount,
+      currency,
+      source: token
+    });
+    res.json({status});
+  } catch (err) {
+    res.status(500).end();
+  }
+});
 
 
 module.exports = router;
